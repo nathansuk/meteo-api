@@ -1,4 +1,3 @@
-const { EmailValidator } = require('../Helpers/AuthValidator')
 const express = require('express')
 const router = express.Router()
 const User = require('../Models/User')
@@ -26,8 +25,6 @@ router.post('/register', (req, res) => {
         errors.push('Votre mot de passe doit contenir au moins 8 caractères, 1 symbole, 1 chiffre et 1 majuscule')
     }
 
-    //Checker si l'utilisateur existe deja en bdd
-
     User.findOne({ email: email }).then(userExists => {
 
         if(userExists) {
@@ -35,7 +32,6 @@ router.post('/register', (req, res) => {
         }
 
         if(errors.length > 0) {
-            console.log("Error during register user")
             res.send({
                 errors: errors
             })
