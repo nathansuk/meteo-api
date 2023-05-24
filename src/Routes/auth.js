@@ -1,7 +1,6 @@
 const express = require('express')
 const router = express.Router()
 const User = require('../Models/User')
-const mongoose = require("mongoose")
 const validator = require('validator')
 const bcrypt = require('bcrypt')
 
@@ -14,8 +13,15 @@ router.post('/register', (req, res) => {
 
     const email = req.body.email
     const password = req.body.password
+    const firstName = req.body.firstName
+    const lastName = req.body.lastName
+    
     const errors = []
     const saltRound = 10
+
+    if(!validator.isAlpha(firstName) || !validator.isAlpha(lastName)) {
+        errors.push("Votre nom ou prénom est invalide")
+    }
 
     if(!validator.isEmail(email)) {
         errors.push('Adresse email invalide')
@@ -39,7 +45,7 @@ router.post('/register', (req, res) => {
         }
     
         const user = new User({
-            email, password
+            firstName, lastName, email, password
         })
     
         const hashedPassword = bcrypt.hashSync(password, saltRound)
