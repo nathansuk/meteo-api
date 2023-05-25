@@ -7,6 +7,7 @@ const port = 8080
 const bodyParser = require('body-parser');
 
 const auth = require('./src/Routes/auth')
+const user = require('./src/Routes/user')
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());// for parsing application/x-www-form-urlencoded
@@ -22,6 +23,7 @@ async function main() {
 main().catch(error => console.log(error))
 
 app.use('/auth', auth)
+app.use('/user', user)
 
 app.set('view engine', 'ejs');
 
