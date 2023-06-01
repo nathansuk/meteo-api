@@ -38,11 +38,6 @@ router.get('/get/:token', async (req, res) => {
         console.log(user)
         res.json(user)
     }
-
-
-
-    
-
 })
 
 module.exports = router
