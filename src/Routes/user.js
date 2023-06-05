@@ -35,6 +35,8 @@ router.get('/get/:token', async (req, res) => {
 
     if(!decodedToken) {
         errors.push("Jeton invalide.")
+        res.json(errors)
+        return
     }
 
     const user = await findUserUsingToken(decodedToken)
@@ -111,19 +113,69 @@ router.post('/change-password', async (req, res) => {
             })
 
         })
-
-
-
-
-
     })
 
+})
 
 
+router.post('/change-infos', async (req, res) => {
 
 
+    const { token, firstName, lastName, email } = req.body
+    const errors = []
 
+    if(!token) {
+        errors.push('Jeton inexistant.')
+    }
 
+    let decodedToken = decodeToken(token)
+
+    if(!decodedToken) {
+        errors.push('Jeton invalide')
+    }
+
+    if(!validator.isEmail(email)){
+        errors.push("L'adresse email saisie est invalide.")
+    }
+
+    if(firstName.length <= 1) {
+        errors.push("Prénom saisi invalide.")
+    }
+
+    if(lastName.length <= 1) {
+        errors.push("Nom saisi invalide.")
+    }
+
+    if(errors.length > 0) {
+        res.json({errors: errors})
+        return
+    }
+
+    const user = await findUserUsingToken(decodedToken)
+
+    if(!user) {
+        errors.push('Utilisateur introuvable')
+    }
+
+    if(errors.length > 0) {
+        res.json({errors: errors})
+        return
+    }
+
+    user.firstName = firstName
+    user.lastName = lastName
+    user.email = email
+    
+    user.save()
+    .then( () => {
+
+        console.log("Utilisateur modifié.")
+        res.json({
+            message: "success"
+        })
+    })
+
+    
 })
 
 module.exports = router
