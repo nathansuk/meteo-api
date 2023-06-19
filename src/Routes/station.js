@@ -3,12 +3,20 @@ const mongoose = require('mongoose')
 const router = express.Router()
 const StationData = require('../Models/StationData')
 
-router.get('/data/:stationId', async(req, res) => {
+router.get('/data/:stationId/:year-:month-:day', async(req, res) => {
 
-    const stationId = req.params.stationId
+    const {stationId, year, month, day} = req.params
     const errors = []
 
-    const datas = await StationData.find({ stationId: stationId })
+    console.log("Récupération des données du : " + year + " / " + month + " / " + day)
+
+    const startOfDay = new Date(Date.UTC(year, month, day, 0, 0, 0, 0)); 
+    const endOfDay = new Date(Date.UTC(year, month, day, 23, 59, 59, 999)); 
+
+    const datas = await StationData.find({ 
+        stationId: stationId,
+        dataDate: { $gte: startOfDay, $lt: endOfDay }
+    }).lean()
     
     if(!datas)
     {
@@ -17,9 +25,8 @@ router.get('/data/:stationId', async(req, res) => {
         return
     }
 
+    console.log("Nombre de données récupérées : " + datas.length)
     res.json(datas)
-
-
 
 
 })

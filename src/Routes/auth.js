@@ -17,6 +17,12 @@ router.post('/login', (req, res) => {
 
         if(!user) {
             errors.push("L'adresse email ne correspond à aucun compte.")
+        }
+
+        if(errors.length > 0) {
+            res.json({
+                errors: errors
+            })
             return
         }
 

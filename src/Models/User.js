@@ -8,6 +8,11 @@ const UserSchema = new mongoose.Schema({
     registrationDate: {
         type: Date,
         default: Date.now
+    },
+    userStations: [mongoose.Schema.Types.ObjectId],
+    favoriteStation: {
+        type: mongoose.Schema.Types.ObjectId,
+        default: null
     }
 })
 
