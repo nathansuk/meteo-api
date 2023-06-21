@@ -1,4 +1,5 @@
 const mongoose = require("mongoose")
+const { StationSchema } = require("./Station")
 
 const UserSchema = new mongoose.Schema({
     firstName: String,
@@ -9,7 +10,7 @@ const UserSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    userStations: [mongoose.Schema.Types.ObjectId],
+    userStations: [{type: mongoose.Schema.Types.ObjectId, ref: 'Station'}],
     favoriteStation: {
         type: mongoose.Schema.Types.ObjectId,
         default: null
@@ -17,5 +18,6 @@ const UserSchema = new mongoose.Schema({
 })
 
 const User = mongoose.model('User', UserSchema)
+const Station = mongoose.model('Station', StationSchema)
 
 module.exports = User

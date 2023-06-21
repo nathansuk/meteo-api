@@ -4,6 +4,7 @@ const User = require('../Models/User')
 const validator = require('validator')
 const bcrypt = require('bcrypt')
 const jwt = require("jsonwebtoken")
+const Station = require("../Models/Station")
 
 const decodeToken = (token) => {
     try {
@@ -18,7 +19,7 @@ const decodeToken = (token) => {
 
 async function findUserUsingToken(decodedToken) {
 
-    const user = await User.findOne({ _id: decodedToken.userId })
+    const user = await User.findOne({ _id: decodedToken.userId }).populate('userStations')
     return user
 }
 
@@ -176,6 +177,134 @@ router.post('/change-infos', async (req, res) => {
     })
 
     
+})
+
+function isIdPresent(data, id) {
+    return data.some(obj => obj._id.toString() === id);
+  }
+
+router.post('/add-station', async (req, res) => {
+
+    const { token, stationName } = req.body
+    const errors = []
+
+    if(!token) {
+        errors.push('Jeton inexistant.')
+    }
+
+    let decodedToken = decodeToken(token)
+
+    if(!decodedToken) {
+        errors.push('Jeton invalide')
+    }
+
+    if(errors.length > 0) {
+        res.json({
+            errors: errors
+        })
+        return
+    }
+
+    const user = await findUserUsingToken(decodedToken)
+
+    if(!user) {
+        errors.push('Utilisateur introuvable')
+    }
+
+    const station = await Station.findOne({ stationName: stationName })
+    
+    if(!station){
+        errors.push("Cette station n'existe pas")
+        res.json({
+            errors: errors
+        })
+        return
+    }
+
+    let userAlreadyHaveStation = false
+
+    user.userStations.forEach(item => {
+        if(item.stationName === stationName)
+            userAlreadyHaveStation = true   
+    })
+    
+    if(userAlreadyHaveStation) {
+        errors.push("Vous possédez déjà cette station")
+        res.json({
+            errors: errors
+        })
+        return
+    }
+
+    user.userStations.push(station.id)
+    user.save()
+        .then(() => {
+            res.json({
+                message: "Success"
+            })
+        })
+
+})
+
+router.post('/fav-station', async(req, res) => {
+    
+    const { token, stationName } = req.body
+    const errors = []
+
+    if(!token) {
+        errors.push('Jeton inexistant.')
+    }
+
+    let decodedToken = decodeToken(token)
+
+    if(!decodedToken) {
+        errors.push('Jeton invalide')
+    }
+
+    if(errors.length > 0) {
+        res.json({
+            errors: errors
+        })
+        return
+    }
+
+    const user = await findUserUsingToken(decodedToken)
+
+    if(!user) {
+        errors.push('Utilisateur introuvable')
+    }
+
+    let userAlreadyHaveStation = false
+
+    user.userStations.forEach(item => {
+        if(item.stationName === stationName)
+            userAlreadyHaveStation = true   
+    })
+
+    if(!userAlreadyHaveStation) {
+        errors.push('Erreur')
+        res.json(errors)
+        return
+    }
+
+    const station = await Station.findOne({ stationName: stationName })
+
+    if(user.favoriteStation !== null && user.favoriteStation.toString() === station._id.toString()) {
+        user.favoriteStation = null
+        console.log(user.firstName + " a retiré la station " + station._id + "de ses favorites")
+    }
+    else {
+        user.favoriteStation = station._id
+        console.log(user.firstName + " a ajouté la station " + station._id + "comme favorite")
+    }
+    user.save()
+        .then(()=> {
+            console.log(user.favoriteStation)
+            res.json({
+                message: 'success'
+            })
+        })
+
 })
 
 module.exports = router
